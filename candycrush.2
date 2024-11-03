@@ -1,0 +1,108 @@
+import random
+
+N = 11
+VALORI_BOMBOANE = [1, 2, 3, 4]
+
+def initializeaza_matrice():
+    """Initializează matricea cu valori aleatorii, asigurându-se că sunt posibile combinații."""
+    matrice = [[random.choice(VALORI_BOMBOANE) for _ in range(N)] for _ in range(N)]
+
+
+    for _ in range(30):
+        for i in range(N):
+            for j in range(N - 2):
+                if matrice[i][j] == matrice[i][j + 1]:
+                    matrice[i][j + 2] = matrice[i][j]
+                if matrice[j][i] == matrice[j + 1][i]:
+                    matrice[j + 2][i] = matrice[j][i]
+
+    return matrice
+
+def calculeaza_punctaj(lungime):
+    """Calculează punctajul în funcție de lungimea combinației."""
+    if lungime == 3:
+        return 5
+    elif lungime == 4:
+        return 10
+    elif lungime == 5:
+        return 50
+    elif lungime > 5:
+        return 300 + (lungime - 5) * 100
+    return 0
+
+def gaseste_formatiuni(matrice):
+    """Găsește combinațiile de 3 sau mai multe pe orizontală și verticală."""
+    puncte = 0
+    for i in range(N):
+        j = 0
+        while j < N:
+            if j < N - 2 and matrice[i][j] != 0 and matrice[i][j] == matrice[i][j + 1] == matrice[i][j + 2]:
+                lungime = 3
+                while j + lungime < N and matrice[i][j] == matrice[i][j + lungime]:
+                    lungime += 1
+                puncte += calculeaza_punctaj(lungime)
+                for k in range(lungime):
+                    matrice[i][j + k] = 0
+                j += lungime
+            else:
+                j += 1
+    for j in range(N):
+        i = 0
+        while i < N:
+            if i < N - 2 and matrice[i][j] != 0 and matrice[i][j] == matrice[i + 1][j] == matrice[i + 2][j]:
+                lungime = 3
+                while i + lungime < N and matrice[i][j] == matrice[i + lungime][j]:
+                    lungime += 1
+                puncte += calculeaza_punctaj(lungime)
+                for k in range(lungime):
+                    matrice[i + k][j] = 0
+                i += lungime
+            else:
+                i += 1
+
+    return puncte
+
+def muta_bomboane(matrice):
+    """Mută bomboanele pentru a umple spațiile goale."""
+    for j in range(N):
+        coloana = [matrice[i][j] for i in range(N) if matrice[i][j] != 0]
+        coloana = [0] * (N - len(coloana)) + coloana
+        for i in range(N):
+            matrice[i][j] = coloana[i]
+
+def simuleaza_joc():
+    """Simulează un joc complet."""
+    matrice = initializeaza_matrice()
+    punctaj_total = 0
+    numar_interschimbari = random.randint(3000, 7000)
+
+    while True:
+        puncte = gaseste_formatiuni(matrice)
+        if puncte > 0:
+            punctaj_total += puncte
+            muta_bomboane(matrice)
+            numar_interschimbari += random.randint(10, 30)
+
+        else:
+            break
+
+    return punctaj_total, numar_interschimbari
+
+def main():
+    total_scores = []
+    total_swaps = []
+    games_to_play = 100
+
+    for _ in range(games_to_play):
+        score, swaps = simuleaza_joc()
+        total_scores.append(score)
+        total_swaps.append(swaps)
+
+    media_punctaj = sum(total_scores) / len(total_scores)
+    media_interschimbari = sum(total_swaps) / len(total_swaps)
+
+    print(f"Media punctajelor din cele {games_to_play} jocuri: {media_punctaj:.2f}")
+    print(f"Media interschimbărilor din cele {games_to_play} jocuri: {media_interschimbari:.2f}")
+
+if __name__ == "__main__":
+    main()
